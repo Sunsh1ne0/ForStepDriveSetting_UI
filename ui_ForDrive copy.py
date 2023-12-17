@@ -88,9 +88,8 @@ class Ui_ForDrive(object):
         self.doubleSpinBox.setAlignment(Qt.AlignCenter)
         self.doubleSpinBox.setDecimals(3)
         self.doubleSpinBox.setMaximum(20.000000000000000)
-        self.doubleSpinBox.setMinimum(-20.000000000000000)
         self.doubleSpinBox.setSingleStep(0.001000000000000)
-        # self.doubleSpinBox.setValue(0.000000000000000)
+        self.doubleSpinBox.setValue(1.000000000000000)
 
         self.verticalLayout.addWidget(self.doubleSpinBox, 0, Qt.AlignHCenter)
 
@@ -109,10 +108,9 @@ class Ui_ForDrive(object):
         self.doubleSpinBox_2.setSizePolicy(sizePolicy3)
         self.doubleSpinBox_2.setMinimumSize(QSize(100, 0))
         self.doubleSpinBox_2.setAlignment(Qt.AlignCenter)
-        self.doubleSpinBox_2.setDecimals(3)
+        self.doubleSpinBox_2.setDecimals(5)
         self.doubleSpinBox_2.setMaximum(20.000000000000000)
-        self.doubleSpinBox_2.setMinimum(-20.000000000000000)
-        self.doubleSpinBox_2.setSingleStep(0.0010000000000)
+        self.doubleSpinBox_2.setSingleStep(0.000010000000000)
 
         self.verticalLayout.addWidget(self.doubleSpinBox_2, 0, Qt.AlignHCenter)
 
@@ -131,9 +129,9 @@ class Ui_ForDrive(object):
         self.doubleSpinBox_3.setSizePolicy(sizePolicy3)
         self.doubleSpinBox_3.setMinimumSize(QSize(100, 0))
         self.doubleSpinBox_3.setAlignment(Qt.AlignCenter)
-        self.doubleSpinBox_3.setDecimals(1)
-        self.doubleSpinBox_3.setMaximum(255.000000000000000)
-        self.doubleSpinBox_3.setSingleStep(1.0000000000000)
+        self.doubleSpinBox_3.setDecimals(3)
+        self.doubleSpinBox_3.setMaximum(20.000000000000000)
+        self.doubleSpinBox_3.setSingleStep(0.001000000000000)
 
         self.verticalLayout.addWidget(self.doubleSpinBox_3, 0, Qt.AlignHCenter)
 
@@ -151,7 +149,7 @@ class Ui_ForDrive(object):
         self.doubleSpinBox_4.setMinimumSize(QSize(100, 0))
         self.doubleSpinBox_4.setAlignment(Qt.AlignCenter)
         self.doubleSpinBox_4.setMaximum(150.000000000000000)
-        self.doubleSpinBox_4.setSingleStep(1.000000000000000)
+        self.doubleSpinBox_4.setSingleStep(0.100000000000000)
 
         self.verticalLayout.addWidget(self.doubleSpinBox_4, 0, Qt.AlignHCenter)
 
@@ -247,16 +245,35 @@ class Ui_ForDrive(object):
         # endif // QT_CONFIG(accessibility)
         self.groupBox.setTitle("")
         self.groupBox_3.setTitle("")
-        self.label_5.setText("SETTING")
-        self.label.setText("Wind (x axis)")
-        self.label_2.setText("Wind (y axis)")
-        self.label_3.setText("Speed")
-        self.label_4.setText("Angle")
+        self.label_5.setText(QCoreApplication.translate("ForDrive",
+                                                        u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430 \u041f\u0418\u0414",
+                                                        None))
+        self.label.setText(QCoreApplication.translate("ForDrive",
+                                                      u"\u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u041f",
+                                                      None))
+        self.label_2.setText(QCoreApplication.translate("ForDrive",
+                                                        u"\u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u0418",
+                                                        None))
+        self.label_3.setText(QCoreApplication.translate("ForDrive",
+                                                        u"\u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u0414",
+                                                        None))
+        self.label_4.setText(QCoreApplication.translate("ForDrive",
+                                                        u"\u041a\u043e\u043d\u0435\u0447\u043d\u043e\u0435 \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435",
+                                                        None))
         self.CurrentValues.setText("")
-        self.sendPID.setText("Update parameters")
-        self.positionUpdate.setText("Send data")
-        self.graphReset.setText("Reset graph")
-        self.checkBoxStopGraph.setText("Stop scrolling")
+        self.sendPID.setText(
+            QCoreApplication.translate("ForDrive", u"\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c PID", None))
+        self.positionUpdate.setText(QCoreApplication.translate("ForDrive",
+                                                               u"\u0417\u0430\u0434\u0430\u0442\u044c \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435",
+                                                               None))
+        self.graphReset.setText(QCoreApplication.translate("ForDrive",
+                                                           u"\u0421\u0431\u0440\u043e\u0441\u0438\u0442\u044c \u0433\u0440\u0430\u0444\u0438\u043a",
+                                                           None))
+        self.checkBoxStopGraph.setText(QCoreApplication.translate("ForDrive",
+                                                                  u"\u041e\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u043f\u0440\u043e\u043a\u0440\u0443\u0442\u043a\u0443",
+                                                                  None))
         self.groupBox_2.setTitle("")
-        self.label_6.setText("Trajectory")
+        self.label_6.setText(QCoreApplication.translate("ForDrive",
+                                                        u"\u041f\u0435\u0440\u0435\u0445\u043e\u0434\u043d\u043e\u0439 \u043f\u0440\u043e\u0446\u0435\u0441\u0441",
+                                                        None))
     # retranslateUi
