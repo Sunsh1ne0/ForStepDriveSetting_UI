@@ -87,6 +87,7 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.traj_x = [0, self.trajectory_length, self.trajectory_length, 0, 0]
         self.traj_y = [0, 0, self.trajectory_length, self.trajectory_length, 0]
         self.theta = 0
+        self.theta_delta = 0
         self.theta_old = 1000
         self.num_point = 1
         self.multiplier = 0
@@ -98,7 +99,6 @@ class ForDrive(QWidget, Ui_ForDrive):
         styles = {'color': 'r', 'font-size': '20px'}
         self.x = [0, 1]
         self.y = [0, 0]
-        # self.delta1 = 0
         self.y1 = [0]
         self.widget.setLabel('left', 'Y, km', **styles)
         self.widget.setLabel('bottom', 'X, km', **styles)
@@ -180,6 +180,7 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.y.append(Y_)
         # print(self.y)
         if self.checkBoxStopGraph.checkState() == Qt.Unchecked:
+            self.CurrentValues.setText(f"Theta: {self.theta_delta}")
             self.data_line.setData(self.x, self.y, pen=(2, 3))  # Update the data.
             self.data_line1.setData(self.traj_x, self.traj_y, pen=(4, 2))
             self.data_line3.setPos(self.x[-1], self.y[-1])
@@ -194,6 +195,7 @@ class ForDrive(QWidget, Ui_ForDrive):
             
             if self.num_point >= 6:
                 self.num_point = 2        
+        
     
     
     def NN_Moving(self, x_old, y_old, z_old, x, y, z, x_aim, y_aim, num_point, slowing, thetad_old, WindX, WindY): 
@@ -286,6 +288,7 @@ class ForDrive(QWidget, Ui_ForDrive):
         Y_new = y + Vy    
 
         self.theta = theta
+        self.theta_delta = np.degrees(theta_tar - theta)
 
         return(X_new, Y_new, np.abs(theta_tar - theta))
 
