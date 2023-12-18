@@ -65,7 +65,7 @@ class ForDrive(QWidget, Ui_ForDrive):
     def __init__(self, parent=None):
         super().__init__()
         temporary = self.palette()
-        temporary.setColor(self.backgroundRole(), QColor(130,130,150))
+        # temporary.setColor(self.backgroundRole(), QColor(130,130,150))
         self.setPalette(temporary)
         self.start_pos = True
         self.dGain = 0.0
@@ -74,7 +74,7 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.position = 0.0
         self.number = 0
 
-        self.trajectory_length = 20
+        self.trajectory_length = 40
         self.V = 0.3
         self.speed = 0
         self.angle = 0
@@ -97,9 +97,14 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.widget.addLegend()
         self.widget.setBackground('w')
         styles = {'color': 'r', 'font-size': '20px'}
-        self.x = [0, 1]
-        self.y = [0, 0]
-        self.y1 = [0]
+        self.x = [0, 0.1]
+        self.y = [-0.1, 0]
+        self.line_num = 0
+        self.x1 = [[], [], [], [], []]
+        self.y1 = [[], [], [], [], []]
+
+        self.new_ = True
+        # self.y1 = [0]
         self.widget.setLabel('left', 'Y, km', **styles)
         self.widget.setLabel('bottom', 'X, km', **styles)
         self.data_line = self.widget.plot(self.x, self.y)
@@ -109,9 +114,12 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.widget.addItem(self.data_line2)
         self.data_line3 = MyArrowItem(angle=0, tipAngle=0, headLen=0, tailLen=0, tailWidth=0, pen={'color': 'w', 'width': 3},  brush='blue')
         self.widget.addItem(self.data_line3)
+        self.data_line4 = [self.widget.plot(self.x, self.y), self.widget.plot(self.x, self.y), self.widget.plot(self.x, self.y), self.widget.plot(self.x, self.y), self.widget.plot(self.x, self.y)]
         self.widget.showGrid(x=True, y=True)
+        self.widget.setXRange(-5, 45, padding=0)
+        self.widget.setYRange(-5, 45, padding=0)
         self.timer = QTimer()
-        self.timer.setInterval(60)
+        self.timer.setInterval(10)
         self.timer.timeout.connect(self.update_plot_data)
         self.timer.start()
         self.update_plot_data()
@@ -127,74 +135,97 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.timer = None
 
     def update_plot_data(self):
-        package = struct.pack('=' + "c f f f", b'@', self.speed, self.position, round(self.crc, 5))
-        # print(package)
-
-        # inpMSGNano.port.reset_input_buffer()
-        # inpMSGNano.get_msg_size()
-        # inpMSGNano.receive()
-        # print(inpMSGNano.message_converted)
-        # print(inpMSGNano.message_converted)
-        # for byteCounter in range(1, 5):
-
-        # if self.allowSend == True:
-        #     arduinoNano.write(package)
-            # None
-        
-        slowing = 0
-        # num_point = 1
-
-        dead_zone = 1
-        
-        
-        match self.num_point:
-            case 1:
-                x_aim, y_aim = self.trajectory_length, 0
-                self.multiplier = 1
-                self.multiplier2 = 0
-            case 2: 
-                x_aim, y_aim = self.trajectory_length, self.trajectory_length
-                self.multiplier = 1
-                self.multiplier2 = 1
-            case 3:
-                x_aim, y_aim = 0, self.trajectory_length
-                self.multiplier = 0
-                self.multiplier2 = 0
-            case 4:
-                x_aim, y_aim = 0,0 
-                self.multiplier = 0
-                self.multiplier2 = 1
-            case 5:
-                x_aim, y_aim = self.trajectory_length, 0
-                self.multiplier = 1
-                self.multiplier2 = 0
-
-        X_,Y_ ,self.theta_old= self.NN_Moving( self.x[-2],self.y[-2],20,self.x[-1],self.y[-1],20,x_aim,y_aim,self.num_point,slowing,self.theta_old,self.WindX,self.WindY)
-
-        # print(self.num_point)
-        if len(self.x) > 400:
-            self.x = self.x[1:]  # Remove the first y element.
-            self.y = self.y[1:]  # Remove the first
-            self.y1 = self.y1[1:]
-        self.x.append(X_)  # Add a new value 1 higher than the last.
-        self.y.append(Y_)
-        # print(self.y)
         if self.checkBoxStopGraph.checkState() == Qt.Unchecked:
+            package = struct.pack('=' + "c f f f", b'@', self.speed, self.position, round(self.crc, 5))
+            # print(package)
+
+            # inpMSGNano.port.reset_input_buffer()
+            # inpMSGNano.get_msg_size()
+            # inpMSGNano.receive()
+            # print(inpMSGNano.message_converted)
+            # print(inpMSGNano.message_converted)
+            # for byteCounter in range(1, 5):
+
+            # if self.allowSend == True:
+            #     arduinoNano.write(package)
+                # None
+            
+            slowing = 0
+            # num_point = 1
+
+            dead_zone = 1
+            
+            
+            match self.num_point:
+                case 1:
+                    x_aim, y_aim = self.trajectory_length, 0
+                    self.multiplier = 1
+                    self.multiplier2 = 0
+                case 2: 
+                    x_aim, y_aim = self.trajectory_length, self.trajectory_length
+                    self.multiplier = 1
+                    self.multiplier2 = 1
+                case 3:
+                    x_aim, y_aim = 0, self.trajectory_length
+                    self.multiplier = 0
+                    self.multiplier2 = 0
+                case 4:
+                    x_aim, y_aim = 0,0 
+                    self.multiplier = 0
+                    self.multiplier2 = 1
+                case 5:
+                    x_aim, y_aim = self.trajectory_length, 0
+                    self.multiplier = 1
+                    self.multiplier2 = 0
+
+            X_,Y_ ,self.theta_old= self.NN_Moving( self.x[-2],self.y[-2],20,self.x[-1],self.y[-1],20,x_aim,y_aim,self.num_point,slowing,self.theta_old,self.WindX,self.WindY)
+
+            # print(self.num_point)
+            if len(self.x) > 520:
+                for i in range (len(self.x1)):
+                    if self.x[0] in self.x1[i]:
+                        if self.y[0] in self.y1[i]:
+                            self.x1[i] = self.x1[i][1:]
+                            self.y1[i] = self.y1[i][1:]
+                            self.data_line4[i].setData(self.x1[i], self.y1[i], pen={'color': 'r', 'width': 2})  # Update the data.
+                self.x = self.x[1:]  # Remove the first y element.
+                self.y = self.y[1:]  # Remove the first
+                # self.y1 = self.y1[1:]
+            self.x.append(X_)  # Add a new value 1 higher than the last.
+            self.y.append(Y_)
+            # print(self.y)
+
+
+        
             self.CurrentValues.setText(f"Theta: {self.theta_delta}")
-            self.data_line.setData(self.x, self.y, pen=(2, 3))  # Update the data.
-            self.data_line1.setData(self.traj_x, self.traj_y, pen=(4, 2))
+            self.data_line.setData(self.x, self.y, pen={'color': 'b', 'width': 2})  # Update the data.
+            if abs(self.theta_delta) >= 3:
+                if self.new_:
+                    self.line_num += 1
+                    if self.line_num >= 5:
+                        self.line_num = 0
+                    self.x1[self.line_num] = []
+                    self.y1[self.line_num] = []
+                self.x1[self.line_num].append(X_)  # Add a new value 1 higher than the last.
+                self.y1[self.line_num].append(Y_)
+                self.data_line4[self.line_num].setData(self.x1[self.line_num], self.y1[self.line_num], pen={'color': 'r', 'width': 2})  # Update the data.
+                self.new_ = False
+            else:
+                self.new_ = True
+                
+            self.data_line1.setData(self.traj_x, self.traj_y, pen={'color': 'black', 'width': 1})
             self.data_line3.setPos(self.x[-1], self.y[-1])
-            self.data_line3.setStyle(angle=np.degrees(self.theta - self.multiplier2 * 2 * self.theta - np.pi * self.multiplier), tipAngle = 60, headLen = 16, tailLen = 0, tailWidth = 2, pen = {'color': 'w', 'width': 1},  brush='b')
+            self.data_line3.setStyle(angle=np.degrees(self.theta - self.multiplier2 * 2 * self.theta - np.pi * self.multiplier), tipAngle = 60, headLen = 16, tailLen = 0, tailWidth = 2, pen = {'color': 'w', 'width': 1},  brush='green')
             if np.sqrt(self.WindX ** 2 + self.WindY ** 2) != 0:
                 self.data_line2.setStyle(angle=np.degrees(np.pi - np.arctan2(self.WindY, self.WindX)), tipAngle = 60, headLen = 16, tailLen = 16, tailWidth = 2, pen = {'color': 'w', 'width': 1},  brush='r')
             else:
                 self.data_line2.setStyle(angle=np.degrees(np.pi - np.arctan2(self.WindY, self.WindX)), tipAngle = 60, headLen = 0, tailLen = 0, tailWidth = 0, pen = {'color': 'w', 'width': 1},  brush='r')
-        if abs(X_ - x_aim) ** 2 + (Y_ - y_aim) ** 2 <= dead_zone ** 2:
-            self.num_point = self.num_point + 1
-            self.theta_old = 1000
-            
-            if self.num_point >= 6:
-                self.num_point = 2        
+            if abs(X_ - x_aim) ** 2 + (Y_ - y_aim) ** 2 <= dead_zone ** 2:
+                self.num_point = self.num_point + 1
+                self.theta_old = 1000
+                
+                if self.num_point >= 6:
+                    self.num_point = 2        
         
     
     
@@ -248,7 +279,7 @@ class ForDrive(QWidget, Ui_ForDrive):
                 else:
                     theta = theta + np.abs(theta_tar - theta) / 4 
             else:
-                theta = theta - np.abs(theta_tar + theta) / 3
+                theta = theta -( np.abs(theta_tar) + np.abs(theta) )/2.5
 
         elif (num_point == 2):
             if (current_vec[1] >= 0):
@@ -270,16 +301,19 @@ class ForDrive(QWidget, Ui_ForDrive):
 
         else:
             if (target_vec[1] >= 0):
-                l = 1
+                
                 if (np.abs(theta) > np.abs(theta_tar)):
+                    l = -1
                     theta = theta - np.abs(theta_tar - theta) / 4
                 else:
+                    l = 1
                     theta = theta + np.abs(theta_tar - theta) / 4    
-                theta = np.abs(theta)
+                theta = (theta)
             else:
+                
                 theta = theta - np.abs(theta_tar + theta) / 4
                 l = -1
-                theta = np.abs(theta)
+                theta = (theta)
             
         Vx = self.V * np.cos(s + j * theta) + WindX / 100
         Vy = self.V * np.sin(l * theta) + WindY / 100
