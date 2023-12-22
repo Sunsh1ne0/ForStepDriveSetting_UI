@@ -16,7 +16,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 import pyqtgraph as pg
 
-# arduinoNano = serial.Serial('COM17', 9600)
+arduinoNano = serial.Serial('COM13', 9600)
 
 class MyArrowItem(pg.ArrowItem):
     def paint(self, p, *args):
@@ -57,8 +57,8 @@ class InputMessage:
                 self.port.reset_input_buffer()
 
 
-# inpMSGNano = InputMessage(arduinoNano, "f f")
-# inpMSGNano = InputMessage(arduinoNano, "f f")
+inpMSGNano = InputMessage(arduinoNano, "f f")
+inpMSGNano = InputMessage(arduinoNano, "f f")
 
 
 class ForDrive(QWidget, Ui_ForDrive):
@@ -71,15 +71,16 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.dGain = 0.0
         self.iGain = 0.0
         self.pGain = 1.0
-        self.position = 0.0
+        self.position = 90.0
         self.number = 0
 
         self.trajectory_length = 40
+        self.angle2 = 90
         self.V = 0.3
         self.speed = 0
-        self.angle = 0
-        self.crc = self.speed + self.angle
-        self.allowSend = False
+        self.angle = 90
+        self.crc = self.speed + self.angle + self.angle2
+        self.allowSend = True
         self.WindX = 0
         self.WindY = 0
         self.WindXMax = 0.8
@@ -98,10 +99,11 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.widget.setBackground('w')
         styles = {'color': 'r', 'font-size': '20px'}
         self.x = [0, 0.1]
-        self.y = [-0.1, 0]
+        self.y = [0, 0]
         self.line_num = 0
         self.x1 = [[], [], [], [], []]
         self.y1 = [[], [], [], [], []]
+        self.counter = 0
 
         self.new_ = True
         # self.y1 = [0]
@@ -119,7 +121,7 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.widget.setXRange(-5, 45, padding=0)
         self.widget.setYRange(-5, 45, padding=0)
         self.timer = QTimer()
-        self.timer.setInterval(10)
+        self.timer.setInterval(4)
         self.timer.timeout.connect(self.update_plot_data)
         self.timer.start()
         self.update_plot_data()
@@ -135,20 +137,25 @@ class ForDrive(QWidget, Ui_ForDrive):
         self.timer = None
 
     def update_plot_data(self):
-        if self.checkBoxStopGraph.checkState() == Qt.Unchecked:
-            package = struct.pack('=' + "c f f f", b'@', self.speed, self.position, round(self.crc, 5))
-            # print(package)
+        self.crc = self.speed + self.angle + self.angle2
+        package = struct.pack('=' + "c f f f f", b'@', self.speed, self.angle, self.angle2, round(self.crc, 5))
+        # print(package)
 
-            # inpMSGNano.port.reset_input_buffer()
-            # inpMSGNano.get_msg_size()
-            # inpMSGNano.receive()
-            # print(inpMSGNano.message_converted)
+        inpMSGNano.port.reset_input_buffer()
+        inpMSGNano.get_msg_size()
+
+        
+        # inpMSGNano.receive()
+        # print(inpMSGNano.message_converted)a
             # print(inpMSGNano.message_converted)
             # for byteCounter in range(1, 5):
 
-            # if self.allowSend == True:
-            #     arduinoNano.write(package)
-                # None
+        if self.allowSend == True:
+            arduinoNano.write(package)
+            None
+        self.counter += 1
+        if self.checkBoxStopGraph.checkState() == Qt.Unchecked and self.counter >= 4:
+            self.counter = 0
             
             slowing = 0
             # num_point = 1
@@ -193,11 +200,25 @@ class ForDrive(QWidget, Ui_ForDrive):
                 # self.y1 = self.y1[1:]
             self.x.append(X_)  # Add a new value 1 higher than the last.
             self.y.append(Y_)
-            # print(self.y)
+            
 
 
         
             self.CurrentValues.setText(f"Theta: {self.theta_delta}")
+            if abs(self.theta_delta) >= 3:
+                self.angle = 90.0 + (abs(self.theta_delta) - 3.0) * 15.0 * self.theta_delta / abs(self.theta_delta)
+                self.angle = 0.0 if self.angle < 0.0 else (180.0 if self.angle > 180.0 else self.angle)
+                self.speed = (abs(self.theta_delta) - 3.0) * 25.0
+                self.speed = 100.0 if (self.speed > 0.0 and self.speed < 100.0) else (255.0 if self.speed >= 255.0 else self.speed)
+                self.angle2 = 65.0 if self.theta_delta < 0 else 115.0
+                # print(self.position)
+                # print(self.speed)
+            else:
+                self.angle2 = 90.0 + abs(self.theta_delta) * 25.0 / 3.0 * self.theta_delta / abs(self.theta_delta + 0.001)
+                # print(self.angle2)
+                self.angle2 = 65.0 if self.angle2 < 65.0 else (115.0 if self.angle2 > 115.0 else self.angle2)
+                self.angle = 90.0
+                self.speed = 0.0
             self.data_line.setData(self.x, self.y, pen={'color': 'b', 'width': 2})  # Update the data.
             if abs(self.theta_delta) >= 3:
                 if self.new_:
@@ -275,43 +296,43 @@ class ForDrive(QWidget, Ui_ForDrive):
         if ((num_point == 1) | (num_point == 3)):
             if (target_vec[1] >= 0):         
                 if (np.abs(theta) > np.abs(theta_tar)):
-                    theta = theta - np.abs(theta_tar - theta) / 4
+                    theta = theta - np.abs(theta_tar - theta) / 4.0
                 else:
-                    theta = theta + np.abs(theta_tar - theta) / 4 
+                    theta = theta + np.abs(theta_tar - theta) / 4.0 
             else:
                 theta = theta -( np.abs(theta_tar) + np.abs(theta) )/2.5
 
         elif (num_point == 2):
             if (current_vec[1] >= 0):
                 if (np.abs(theta) > np.abs(theta_tar)):
-                    theta = theta - np.abs(theta_tar - theta) / 4
+                    theta = theta - np.abs(theta_tar - theta) / 4.0
                 else:
-                    theta = theta + np.abs(theta_tar - theta) / 4  
+                    theta = theta + np.abs(theta_tar - theta) / 4.0  
             else:
-                theta = theta + np.abs(theta_tar + theta) / 4
+                theta = theta + np.abs(theta_tar + theta) / 4.0
                 
         elif (num_point == 4):
             if (current_vec[1] < 0):        
                 if (np.abs(theta) > np.abs(theta_tar)):
-                    theta = theta - np.abs(theta_tar - theta) / 4
+                    theta = theta - np.abs(theta_tar - theta) / 4.0
                 else:
-                    theta = theta + np.abs(theta_tar - theta) / 4   
+                    theta = theta + np.abs(theta_tar - theta) / 4.0   
             else:
-                theta = theta - np.abs(theta_tar + theta) / 4
+                theta = theta - np.abs(theta_tar + theta) / 4.0
 
         else:
             if (target_vec[1] >= 0):
                 
                 if (np.abs(theta) > np.abs(theta_tar)):
                     l = -1
-                    theta = theta - np.abs(theta_tar - theta) / 4
+                    theta = theta - np.abs(theta_tar - theta) / 4.0
                 else:
                     l = 1
-                    theta = theta + np.abs(theta_tar - theta) / 4    
+                    theta = theta + np.abs(theta_tar - theta) / 4.0    
                 theta = (theta)
             else:
                 
-                theta = theta - np.abs(theta_tar + theta) / 4
+                theta = theta - np.abs(theta_tar + theta) / 4.0
                 l = -1
                 theta = (theta)
             
@@ -322,7 +343,10 @@ class ForDrive(QWidget, Ui_ForDrive):
         Y_new = y + Vy    
 
         self.theta = theta
-        self.theta_delta = np.degrees(theta_tar - theta)
+        self.theta_delta = abs(np.degrees(theta_tar - theta)) if (num_point == 3) else (-np.degrees(theta_tar - theta) if (num_point == 1 or num_point == 5) else np.degrees(theta_tar - theta))
+        # self.theta_delta = np.degrees(theta_tar - theta)
+        print(f"theta: {np.degrees(theta)}, theta_tar: {np.degrees(theta_tar)}, self.angle2: {self.angle2}")
+        
 
         return(X_new, Y_new, np.abs(theta_tar - theta))
 
@@ -362,8 +386,8 @@ class ForDrive(QWidget, Ui_ForDrive):
         # arduinoNano.write(package)
 
     def UpdateParams(self):
-        self.position = self.doubleSpinBox_4.value()
-        self.speed = self.doubleSpinBox_3.value()
+        # self.position = self.doubleSpinBox_4.value()
+        # self.speed = self.doubleSpinBox_3.value()
         self.WindX = self.doubleSpinBox.value()
         self.WindY = self.doubleSpinBox_2.value()
         
